@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TaskPriority {
+  HIGH
+  MEDIUM
+  NORMAL
+  LOW
+}
+
+enum TaskStage {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ActivityType {
+  ASSIGNED
+  STARTED
+  IN_PROGRESS
+  BUG
+  COMPLETED
+  COMMENTED
+}
+
+enum NoticeType {
+  ALERT
+  MESSAGE
+}
+
+model User {
+  id        String   @id @default(uuid()) @map("user_id") 
+  name      String
+  title     String
+  role      String
+  email     String   @unique
+  password  String
+  isAdmin   Boolean  @default(false)
+  isActive  Boolean  @default(true) @map("is_active")
+  sessions Session[]
+  managerId     String?  @map("manager_id")
+  manager       User?    @relation("UserManagement", fields: [managerId], references: [id])
+  managedUsers  User[]   @relation("UserManagement")
+  tasksAssigned Task[] @relation("TeamAssignments") 
+  activities Activity[] 
+  noticesReceived Notice[] @relation("NoticeTeamRecipients")
+  noticesRead     Notice[] @relation("NoticeReadStatus") 
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+
+  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+}
+
+
+model Task {
+  id        String   @id @default(uuid()) @map("task_id")
+  title     String
+  date      DateTime @default(now())
+  priority  TaskPriority @default(NORMAL)
+  stage     TaskStage    @default(TODO)
+  assets    String[]     
+  isTrashed Boolean      @default(false)
+  activities Activity[] 
+  subTasks   SubTask[]  
+  teamUsers User[]       @relation("TeamAssignments")
+  notices   Notice[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("tasks")
+}
+
+model Activity {
+  id        String       @id @default(uuid()) @map("activity_id")
+  type      ActivityType @default(ASSIGNED)
+  activity  String?      // The content of the activity/comment (Mongoose 'activity: String' implies not always required)
+  date      DateTime     @default(now())
+  by        User         @relation(fields: [byUserId], references: [id])
+  byUserId  String       @map("by_user_id")
+  task      Task         @relation(fields: [taskId], references: [id])
+  taskId    String       @map("task_id")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@map("task_activities")
+}
+
+model SubTask {
+  id        String   @id @default(uuid()) @map("sub_task_id")
+  title     String
+  date      DateTime? // Assuming it can be null if not provided
+  tag       String?   // Optional field
+  task      Task     @relation(fields: [taskId], references: [id])
+  taskId    String   @map("task_id")
+
+  @@map("sub_tasks")
+}
+
+model Notice {
+  id        String   @id @default(uuid()) @map("notice_id")
+  text      String
+  notiType  NoticeType @default(ALERT) @map("notice_type")
+  teamRecipients User[] @relation("NoticeTeamRecipients") 
+  task      Task?    @relation(fields: [taskId], references: [id])
+  taskId    String?  @map("task_id")
+  readBy     User[]   @relation("NoticeReadStatus")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("notifications")
+}
