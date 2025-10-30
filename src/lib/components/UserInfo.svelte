@@ -1,27 +1,25 @@
 <script lang="ts">
-	import { getInitials } from '$lib';
-	import { Popover } from 'flowbite-svelte';
+	import { BGS, getInitials } from '$lib';
+	import { Avatar, Tooltip } from 'flowbite-svelte';
 
-	let { user } = $props();
-
-	let isOpen = $state(false);
-
-	const toggle = () => {
-		isOpen = !isOpen;
-	};
+	let { team } = $props();
 </script>
 
-<div class="px-4">
-	<div class="relative">
-		<button onclick={toggle} class="group inline-flex items-center outline-none">
+<div class="flex">
+	{#each team as user, index}
+		<Avatar
+			data-name={user.name}
+			class={'cursor-pointer text-stone-50 ' + BGS[index % BGS?.length]}
+			stacked
+		>
 			<span>{getInitials(user?.name)}</span>
-		</button>
-		<Popover
-			bind:isOpen
-			arrow={false}
+		</Avatar>
+		<Tooltip
 			trigger="click"
-			placement="top"
-			class="transform-x-1/2 absolute left-1/2 z-10 mt-3 w-90 max-w-sm -translate-x-1/2 transform rounded-lg bg-stone-50 px-4 shadow-lg sm:px-0"
+			arrow={false}
+			type="light"
+			placement="bottom"
+			class="absolute mt-3 w-90 max-w-sm rounded-2xl bg-stone-100 px-4 shadow-sm sm:px-0"
 		>
 			<div class="flex items-center gap-4 p-4">
 				<div
@@ -35,6 +33,6 @@
 					<span class="text-base text-blue-500">{user.email}</span>
 				</div>
 			</div>
-		</Popover>
-	</div>
+		</Tooltip>
+	{/each}
 </div>

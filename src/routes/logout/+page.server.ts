@@ -1,18 +1,16 @@
 import { lucia } from '$lib/server/auth.js';
-import { redirect } from '@sveltejs/kit';
+import { redirect, type Actions } from '@sveltejs/kit';
 
 export const load = async () => {
 	redirect(303, '/');
 };
 
-export const actions = {
+export const actions: Actions = {
 	default: async ({ cookies }) => {
 		cookies.set(lucia.sessionCookieName, '', {
 			path: '/',
 			expires: new Date(0)
 		});
-
-		console.log('Logout successfully');
 
 		return { success: true };
 	}

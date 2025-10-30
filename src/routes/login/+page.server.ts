@@ -31,7 +31,6 @@ export const actions = {
 			formSchema.validateSync({ email, password }, { abortEarly: false });
 
 			const user = await isUserExist(email);
-			console.log('checking user: ', user);
 
 			if (!user) {
 				console.log('invalid email');
@@ -43,7 +42,6 @@ export const actions = {
 			}
 
 			const isMatch = await comparePassword(password, user?.password);
-			console.log('password checked: ', isMatch);
 
 			if (!isMatch) {
 				return fail(400, { message: 'Incorrect username or password' });

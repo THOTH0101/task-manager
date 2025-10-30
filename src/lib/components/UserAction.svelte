@@ -3,15 +3,17 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { Button, Modal } from 'flowbite-svelte';
 	import { QuestionCircleSolid } from 'flowbite-svelte-icons';
+	import { toast } from 'svelte-sonner';
 	import { slide } from 'svelte/transition';
 
 	let { open = $bindable(), user } = $props();
 
 	const handleSubmit: SubmitFunction = async () => {
 		return async ({ result, update }) => {
-			if (result) {
+			if (result.type === 'success') {
 				await update();
 				open = false;
+				toast.success(result.data?.message);
 			}
 		};
 	};

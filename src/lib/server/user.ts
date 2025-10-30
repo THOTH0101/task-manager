@@ -17,6 +17,9 @@ export const addUser = async (
 
 		if (user.isAdmin) {
 			result = await db.user.create({ data: user, select: { id: true } });
+
+			const managerId = result.id as string;
+			await db.user.update({ where: { id: managerId }, data: { managerId } });
 		} else {
 			result = await db.user.create({ data: { ...user, managerId }, select: { id: true } });
 		}

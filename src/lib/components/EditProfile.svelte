@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { Button, Input, Label, Modal } from 'flowbite-svelte';
-	import Loader from './Loader.svelte';
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
+	import { Button, Input, Label, Modal } from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
+	import Loader from './Loader.svelte';
 
 	export let open: boolean = false;
 	export let user: { name?: string; title?: string; email?: string; role?: string } | null = null;
@@ -59,7 +59,7 @@
 	>
 		<div class="sm:flex sm:items-start">
 			<form
-				action={user ? '/team?/updateUser' : '/team?/addUser'}
+				action="/team?/updateUser"
 				method="POST"
 				use:enhance={handleSubmit}
 				class="mt-3 w-full sm:mt-0 sm:ml-4 sm:text-left"

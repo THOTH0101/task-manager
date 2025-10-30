@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { BGS, ICONS, PRIOTITYSTYLES } from '$lib';
+	import { ICONS, PRIOTITYSTYLES } from '$lib';
 	import moment from 'moment';
 	import TaskColor from './TaskColor.svelte';
 	import UserInfo from './UserInfo.svelte';
@@ -35,17 +35,7 @@
 						</div>
 					</td>
 					<td class="py-2">
-						<div class="flex">
-							{#each task.team as m, index}
-								<div
-									id="card-{index}"
-									class={'-mr-1 flex h-7 w-7 items-center justify-center rounded-full text-sm text-stone-50 ' +
-										BGS[index % BGS.length]}
-								>
-									<UserInfo user={m} />
-								</div>
-							{/each}
-						</div>
+						<UserInfo team={task?.team} />
 					</td>
 					<td>
 						<span>{moment(task.date).fromNow()}</span>

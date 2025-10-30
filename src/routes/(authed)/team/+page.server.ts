@@ -1,13 +1,26 @@
 import { hashPassword } from '$lib/bcrpyt';
 import { addUser, deleteUser, getUserList, isUserExist, updateUser } from '$lib/server/user';
 import { fail } from '@sveltejs/kit';
-import { object, string } from 'yup';
+import { object, ref, string } from 'yup';
 import type { Actions, PageServerLoad } from './$types';
+import type { User } from '$lib';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const users = await getUserList(locals.user?.id as string);
+	const result = await getUserList(locals.user?.id as string);
 
-	return { team: users };
+	const team: User[] | undefined = result?.map((user): User => {
+		return {
+			id: user?.id as string,
+			email: user?.email as string,
+			name: user?.name as string,
+			title: user?.title as string,
+			role: user?.role as string,
+			isAdmin: user?.isAdmin as boolean,
+			isActive: user?.isActive as boolean
+		};
+	});
+
+	return { team };
 };
 
 export const actions: Actions = {
@@ -31,15 +44,12 @@ export const actions: Actions = {
 			await formSchema.validate({ name, title, email, role }, { abortEarly: false });
 
 			const isUserExists = await isUserExist(email);
-			console.log('is User id: ', isUserExists);
 
 			if (isUserExists) {
-				console.log('A user with this email already exists');
 				return fail(400, { message: 'A user with this email already exists.' });
 			}
 
 			const hashedPassword = await hashPassword(email);
-			console.log('hashed password: ', hashPassword);
 
 			const result = await addUser(
 				{
@@ -55,10 +65,9 @@ export const actions: Actions = {
 			);
 
 			if (!result) {
-				return fail(400, { message: 'Failed to add user.' });
+				return fail(400, { message: 'Error! unable to create user.' });
 			}
 
-			console.log('User created: ', result);
 			return { message: 'New user created successfully.' };
 		} catch (error: any) {
 			const validationError: Record<string, unknown> = {};
@@ -71,7 +80,8 @@ export const actions: Actions = {
 				return fail(400, { input: { name, title, email, role }, errors: validationError });
 			}
 
-			return fail(400, { message: 'Error creating user.' });
+			console.log('Error adding user: ', error);
+			return fail(400, { message: 'Error! unable to create user.' });
 		}
 	},
 	updateUser: async ({ request }) => {
@@ -96,7 +106,7 @@ export const actions: Actions = {
 			const result = await updateUser({ name, title, email, role }, email);
 
 			if (!result) {
-				return fail(400, { message: 'Unable to update user.' });
+				return fail(400, { message: 'Error! unable to update user.' });
 			}
 
 			return { message: 'User updated successfully.' };
@@ -111,7 +121,8 @@ export const actions: Actions = {
 				return fail(400, { input: { name, title, email, role }, errors: validationError });
 			}
 
-			return fail(400, { message: 'Error updating user.' });
+			console.log('Error updating user: ', error);
+			return fail(400, { message: 'Error! unable to update user.' });
 		}
 	},
 	deleteUser: async ({ request, locals }) => {
@@ -123,7 +134,7 @@ export const actions: Actions = {
 			const adminId = locals.user?.id;
 
 			if (userId === adminId) {
-				return fail(400, { message: "You can't delete your own account." });
+				return fail(400, { message: "Error! you can't delete your own account." });
 			}
 
 			await deleteUser(userId);
@@ -131,10 +142,10 @@ export const actions: Actions = {
 			return { success: true };
 		} catch (error) {
 			console.log('Error deleting user: ', error);
-			return fail(400, { message: 'Error deleting user.' });
+			return fail(400, { message: 'Error! unable to delete user.' });
 		}
 	},
-	activeUser: async ({ request, locals }) => {
+	activeUser: async ({ request }) => {
 		const formData = await request.formData();
 
 		const email = formData.get('email') as string;
@@ -145,10 +156,57 @@ export const actions: Actions = {
 		try {
 			await updateUser({ isActive }, email);
 
-			return { success: true };
+			let message;
+
+			message = isActive ? 'User activated successfully.' : 'User deactivated successfully.';
+			return { message };
 		} catch (error) {
 			console.log('Error deleting user: ', error);
-			return fail(400, { message: 'Error deleting user.' });
+			return fail(400, { message: 'Error! unable to activate or deactivate user.' });
+		}
+	},
+	changePassword: async ({ request }) => {
+		const formData = await request.formData();
+
+		const email = formData.get('email') as string;
+		const password = formData.get('password') as string;
+		const confirmPassword = formData.get('confirmPassword') as string;
+
+		const formSchema = object({
+			password: string()
+				.required('Password is required')
+				.min(8, 'Password must be at least 8 characters'),
+			confirmPassword: string()
+				.oneOf([ref('password')], 'Passwords must match')
+				.required('Confirm password is required')
+		});
+
+		try {
+			// Validate the form data
+			await formSchema.validate({ password, confirmPassword }, { abortEarly: false });
+
+			const hashedPassword = await hashPassword(password);
+
+			const result = await updateUser({ password: hashedPassword }, email);
+
+			if (!result) {
+				return fail(400, { message: 'Error! unable to change user password.' });
+			}
+
+			return { success: true };
+		} catch (error: any) {
+			const validationError: Record<string, unknown> = {};
+
+			if (error.inner) {
+				error.inner.forEach((error: any) => {
+					validationError[error.path] = error.message;
+				});
+
+				return fail(400, { errors: validationError });
+			}
+
+			console.log('Error changing user password: ', error);
+			return fail(400, { message: 'Error! unable to change user password.' });
 		}
 	}
 };

@@ -106,7 +106,7 @@
 					{#if isLoading}
 						<Loader />
 					{:else}
-						<Button type="submit" color="blue" class="text-stone-100">Submit</Button>
+						<Button type="submit" color="blue" class="cursor-pointer text-stone-100">Submit</Button>
 					{/if}
 					<p class="mt-2 text-center text-sm text-blue-600">
 						Or

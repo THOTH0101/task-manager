@@ -1,7 +1,6 @@
 <script>
 	import { openSidebar } from '$lib/store/store';
 	import { BarsOutline, SearchOutline } from 'flowbite-svelte-icons';
-	import { user } from '../../assets/data';
 	import NotificationPanel from './NotificationPanel.svelte';
 	import UserAvatar from './UserAvatar.svelte';
 
