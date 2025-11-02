@@ -3,22 +3,9 @@ import { addUser, deleteUser, getUserList, isUserExist, updateUser } from '$lib/
 import { fail } from '@sveltejs/kit';
 import { object, ref, string } from 'yup';
 import type { Actions, PageServerLoad } from './$types';
-import type { User } from '$lib';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const result = await getUserList(locals.user?.id as string);
-
-	const team: User[] | undefined = result?.map((user): User => {
-		return {
-			id: user?.id as string,
-			email: user?.email as string,
-			name: user?.name as string,
-			title: user?.title as string,
-			role: user?.role as string,
-			isAdmin: user?.isAdmin as boolean,
-			isActive: user?.isActive as boolean
-		};
-	});
+	const team = await getUserList(locals.user?.id as string);
 
 	return { team };
 };

@@ -1,23 +1,46 @@
 <script lang="ts">
-	import { summary } from '../../../assets/data';
 	import Chart from '$lib/components/Chart.svelte';
 	import TaskTable from '$lib/components/TaskTable.svelte';
 	import UserTable from '$lib/components/UserTable.svelte';
+	import { Card } from 'flowbite-svelte';
 	import {
 		CheckCircleOutline,
 		EditOutline,
 		NewspaperOutline,
 		OrderedListOutline
 	} from 'flowbite-svelte-icons';
-	import { Card } from 'flowbite-svelte';
 
-	const totals = summary.tasks;
+	let { data } = $props();
+	const totals = {
+		todo: data.tasks?.filter((task) => task.stage === 'todo')?.length as number,
+		'in progress': data.tasks?.filter((task) => task.stage === 'in_progress')?.length as number,
+		completed: data.tasks?.filter((task) => task.stage === 'completed')?.length as number
+	};
+
+	const chartData = [
+		{
+			name: 'High',
+			total: data.tasks?.filter((task) => task.priority === 'high')?.length as number
+		},
+		{
+			name: 'Medium',
+			total: data.tasks?.filter((task) => task.priority === 'medium')?.length as number
+		},
+		{
+			name: 'Normal',
+			total: data.tasks?.filter((task) => task.priority === 'normal')?.length as number
+		},
+		{
+			name: 'Low',
+			total: data.tasks?.filter((task) => task.priority === 'low')?.length as number
+		}
+	];
 
 	const stats = [
 		{
 			_id: '1',
 			label: 'TOTAL TASKS',
-			total: summary.totalTasks || 0,
+			total: data.tasks?.length || 0,
 			icon: NewspaperOutline,
 			bg: 'bg-[#1d4ed8]'
 		},
@@ -53,7 +76,6 @@
 					<div class="flex h-full flex-1 flex-col justify-between">
 						<p class="text-base text-stone-600">{label}</p>
 						<span class="text-2xl font-semibold">{total}</span>
-						<span class="text-sm text-stone-400">{'110 last month'}</span>
 					</div>
 
 					<div class="flex h-10 w-10 items-center justify-center rounded-full text-stone-50 {bg}">
@@ -66,13 +88,13 @@
 
 	<div class="my-16 w-full rounded bg-stone-200 p-4 shadow-sm">
 		<h4 class="text-xl font-semibold text-stone-600">Chart by Priority</h4>
-		<Chart />
+		<Chart {chartData} />
 	</div>
 
 	<div class="flex w-full flex-col gap-4 py-8 md:flex-row 2xl:gap-10">
 		<!-- left -->
-		<TaskTable tasks={summary.last10Task} />
+		<TaskTable tasks={data.tasks?.slice(0, 10)} />
 		<!-- right -->
-		<UserTable users={summary.users} />
+		<UserTable users={data.users?.slice(0, 10)} />
 	</div>
 </div>

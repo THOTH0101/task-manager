@@ -5,7 +5,6 @@
 	import {
 		DotsHorizontalOutline,
 		EditOutline,
-		FileCopyOutline,
 		FolderOpenOutline,
 		PlusOutline,
 		TrashBinOutline
@@ -13,15 +12,15 @@
 	import { toast } from 'svelte-sonner';
 	import AddSubTask from './AddSubTask.svelte';
 	import AddTask from './AddTask.svelte';
+	import type { Task } from '$lib';
 
 	const { task } = $props();
 
 	let isOpen = $state(false);
 	let openTask = $state(false);
 	let openSubtask = $state(false);
-	let selectedTask: object | undefined = $state({});
+	let selectedTask = $state<Task>();
 
-	const duplicateHandler = () => {};
 	let isLoading = $state(false);
 
 	const items = [
@@ -45,12 +44,6 @@
 			icon: PlusOutline,
 			className: 'mr-2 h-5 w-5',
 			onClick: () => (openSubtask = true)
-		},
-		{
-			label: 'Duplicate',
-			icon: FileCopyOutline,
-			className: 'mr-2 h-5 w-5',
-			onClick: () => duplicateHandler()
 		}
 	];
 </script>
@@ -108,4 +101,4 @@
 </div>
 
 <AddTask bind:open={openTask} task={selectedTask} />
-<AddSubTask bind:open={openSubtask} />
+<AddSubTask bind:open={openSubtask} {task} />

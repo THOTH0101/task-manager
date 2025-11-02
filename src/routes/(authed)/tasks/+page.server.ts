@@ -4,59 +4,23 @@ import {
 	TaskPriority,
 	TaskStage,
 	type Activity,
-	type SubTask,
-	type Task,
-	type User
+	type Task
 } from '$lib';
-import {
-	addTask,
-	deleteAllTasks,
-	getUserTasks,
-	updateAllTasks,
-	updateTask
-} from '$lib/server/task';
+import { addTask, deleteAllTasks, getUserTasks, updateAllTasks } from '$lib/server/task';
 import { fail, type Actions } from '@sveltejs/kit';
 import { date, object, string } from 'yup';
 import type { PageServerLoad } from './$types';
+import { addNotice } from '$lib/server/notice';
+import { addActivity } from '$lib/server/activity';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const result = await getUserTasks(locals?.user?.id as string);
-
-	const tasks: Task[] =
-		result?.map((task): Task => {
-			const priority = (TaskPriority[task.priority] as string).toLowerCase();
-			const stage = (TaskStage[task.stage] as string).toLowerCase();
-
-			const activities = task.activities.map((activity): Activity => {
-				const type = (ActivityType[activity.type] as string).toLowerCase();
-				return {
-					id: activity.id,
-					type,
-					date: activity.date,
-					by: activity.byUserId,
-					activity: activity.activity ?? ''
-				};
-			});
-
-			return {
-				id: task.id,
-				title: task.title,
-				date: task.date,
-				assets: task.assets,
-				isTrashed: task.isTrashed,
-				activities,
-				subTasks: task.subTasks as SubTask[],
-				team: task.teamUsers as User[],
-				priority,
-				stage
-			};
-		}) ?? [];
+	const tasks: Task[] = (await getUserTasks(locals?.user?.id as string)) as Task[];
 
 	return { tasks };
 };
 
 export const actions: Actions = {
-	addTask: async ({ request }) => {
+	addTask: async ({ request, locals }) => {
 		const formData = await request.formData();
 
 		let title = formData.get('title') as string;
@@ -86,11 +50,37 @@ export const actions: Actions = {
 
 			let dueDate: Date | undefined = new Date(dueDateString);
 
+			//alert users of the task
+			let text = 'New task has been assigned to you';
+			if (users?.length > 1) {
+				text = text + ` and ${users?.length - 1} others.`;
+			}
+
+			text =
+				text +
+				` The task priority is set a ${priorityString} priority, so check and act accordingly. The task date is ${dueDate.toDateString()}. Thank you!!!`;
+
+			const activity: Activity = {
+				type: 'assigned',
+				activity: text
+			};
+
+			// create new task
 			const result = await addTask({ title, date: dueDate, stage, priority, users });
 
 			if (!result) {
 				return fail(400, { message: 'Failed to create task.' });
 			}
+
+			// create notification for the created task
+			await addNotice({ text, users }, result.id);
+
+			// create assigned activity for newly created task
+			await addActivity(
+				{ activity: text, type: ActivityType['ASSIGNED'] },
+				locals.user?.id as string,
+				result.id
+			);
 
 			return { message: 'New task created successfully.' };
 		} catch (error: any) {
@@ -108,6 +98,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'Error creating task.' });
 		}
 	},
+
 	restoreTasks: async ({ locals }) => {
 		const result = await updateAllTasks({ isTrashed: false }, locals.user?.id as string);
 
@@ -115,6 +106,7 @@ export const actions: Actions = {
 
 		return { message: 'All tasks restored successfully.' };
 	},
+
 	deleteTasks: async ({ locals }) => {
 		const result = await deleteAllTasks(locals.user?.id as string);
 

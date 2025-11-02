@@ -28,6 +28,11 @@ export enum ActivityType {
 	COMMENTED = 'COMMENTED'
 }
 
+export enum NoticeType {
+	ALERT = 'ALERT',
+	MESSAGE = 'MESSAGE'
+}
+
 export type User = {
 	id: string;
 	email: string;
@@ -52,11 +57,11 @@ export type Task = {
 };
 
 export type Activity = {
-	id: string;
+	id?: string;
 	type: string;
 	activity: string;
-	date: Date;
-	by: string;
+	date?: Date;
+	by?: string;
 };
 
 export type SubTask = {
@@ -64,6 +69,16 @@ export type SubTask = {
 	title: string;
 	date: Date;
 	tag: string;
+};
+
+export type Notice = {
+	id?: string;
+	team?: User[];
+	text: string;
+	task: Task;
+	notiType: NoticeType;
+	readBy: User[];
+	createdAt: Date;
 };
 
 export function safeStringToEnum<T extends Record<string, any>>(

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { LISTS, PRIORITY } from '$lib';
+	import { LISTS, PRIORITY, type Task } from '$lib';
 	import { currentTeam } from '$lib/store/store';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { SelectOptionType } from 'flowbite-svelte';
@@ -11,7 +11,7 @@
 	import Loader from './Loader.svelte';
 
 	export let open: boolean = false;
-	export let task: { title?: string; date?: string } | null = null;
+	export let task: Task | null = null;
 
 	let isLoading = false;
 
@@ -25,7 +25,9 @@
 
 	let userInput = {
 		title: task?.title ?? '',
-		dateInput: task?.date ?? ''
+		dateInput: task?.date?.toISOString().slice(0, 10) ?? '',
+		stage: task?.stage ?? '',
+		priority: task?.priority ?? ''
 	};
 	let errors = { title: '', dateInput: '' };
 
@@ -33,7 +35,9 @@
 	$: if (task !== undefined) {
 		userInput = {
 			title: task?.title ?? '',
-			dateInput: task?.date ?? ''
+			dateInput: task?.date?.toISOString().slice(0, 10) ?? '',
+			stage: task?.stage ?? '',
+			priority: task?.priority ?? ''
 		};
 	}
 
@@ -108,7 +112,7 @@
 						class="rounded-lg border border-stone-300 bg-stone-200 px-3 py-2.5 pr-10 pl-3 text-left sm:text-sm 2xl:py-3"
 					>
 						{#each LISTS as list}
-							<option value={list}>
+							<option value={list} selected={list === task?.stage.toUpperCase()?.replace('_', ' ')}>
 								{list}
 							</option>
 						{/each}
@@ -139,7 +143,7 @@
 						class="rounded-lg border border-stone-300 bg-stone-200 px-3 py-2.5 pr-10 pl-3 text-left sm:text-sm 2xl:py-3"
 					>
 						{#each PRIORITY as list}
-							<option value={list}>
+							<option value={list} selected={list === task?.priority.toUpperCase()}>
 								{list}
 							</option>
 						{/each}
@@ -183,7 +187,7 @@
 							type="button"
 							class="cursor-pointer bg-stone-100 px-5 text-sm font-semibold text-stone-900 sm:w-auto"
 							onclick={() => {
-								userInput = { title: '', dateInput: '' };
+								userInput = { title: '', dateInput: '', stage: '', priority: '' };
 								errors = { title: '', dateInput: '' };
 								open = false;
 							}}

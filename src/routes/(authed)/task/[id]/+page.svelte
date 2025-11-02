@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { getInitials, ICONS, PRIOTITYSTYLES, type Task } from '$lib';
+	import { getInitials, ICONS, PRIOTITYSTYLES } from '$lib';
 	import TaskColor from '$lib/components/TaskColor.svelte';
-	import { tasks } from '$lib/data';
 	import { Button, TabItem, Tabs } from 'flowbite-svelte';
 	import {
 		BugOutline,

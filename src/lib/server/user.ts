@@ -1,3 +1,4 @@
+import type { User } from '$lib';
 import db from './database';
 
 export const addUser = async (
@@ -54,7 +55,17 @@ export const getUserById = async (userId: string) => {
 	try {
 		const result = await db.user.findUnique({ where: { id: userId } });
 
-		return result;
+		const user: User = {
+			id: result?.id as string,
+			email: result?.email as string,
+			name: result?.name as string,
+			title: result?.title as string,
+			role: result?.role as string,
+			isAdmin: result?.isAdmin as boolean,
+			isActive: result?.isActive as boolean
+		};
+
+		return user;
 	} catch (error) {
 		console.log('Error getting list of user: ', error);
 	}
@@ -64,7 +75,19 @@ export const getUserList = async (managerId: string) => {
 	try {
 		const result = await db.user.findMany({ where: { managerId } });
 
-		return result;
+		const users: User[] | undefined = result?.map((user): User => {
+			return {
+				id: user?.id as string,
+				email: user?.email as string,
+				name: user?.name as string,
+				title: user?.title as string,
+				role: user?.role as string,
+				isAdmin: user?.isAdmin as boolean,
+				isActive: user?.isActive as boolean
+			};
+		});
+
+		return users;
 	} catch (error) {
 		console.log('Error getting list of user: ', error);
 	}

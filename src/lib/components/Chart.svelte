@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { chartData } from '../../assets/data';
 	import { echarts } from '$lib/echarts';
+
+	export let chartData: { name: string; total: number }[];
 
 	const priority = chartData.map((data) => data.name);
 	const total = chartData.map((data) => data.total);
@@ -22,6 +23,6 @@
 	};
 </script>
 
-<div class="rounded-full mt-3">
+<div class="mt-3 rounded-full">
 	<div class="container h-[500px] w-full" use:echarts={option}></div>
 </div>

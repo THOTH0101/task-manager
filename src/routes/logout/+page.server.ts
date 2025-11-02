@@ -2,7 +2,7 @@ import { lucia } from '$lib/server/auth.js';
 import { redirect, type Actions } from '@sveltejs/kit';
 
 export const load = async () => {
-	redirect(303, '/');
+	redirect(303, '/login');
 };
 
 export const actions: Actions = {

@@ -17,28 +17,29 @@
 	let boardData = $state<{ title: string; tasks: Task[] }[]>();
 
 	$effect(() => {
-		const todoTasks = data.tasks.filter((task) => task.stage === 'todo');
-		const inProgressTasks = data.tasks.filter((task) => task.stage === 'in_progress');
-		const completedTasks = data.tasks.filter((task) => task.stage === 'completed');
+		const todoTasks = data.tasks?.filter((task) => task.stage === 'todo');
+		const inProgressTasks = data.tasks?.filter((task) => task.stage === 'in_progress');
+		const completedTasks = data.tasks?.filter((task) => task.stage === 'completed');
 
 		boardData = [
 			{
 				title: 'todo',
-				tasks: todoTasks
+				tasks: todoTasks ?? []
 			},
 			{
 				title: 'in progress',
-				tasks: inProgressTasks
+				tasks: inProgressTasks ?? []
 			},
 			{
 				title: 'completed',
-				tasks: completedTasks
+				tasks: completedTasks ?? []
 			}
 		];
 	});
 
 	let openTask = $state(false);
 	let openSubTask = $state(false);
+	let selectedTask = $state<Task>();
 </script>
 
 <div class="mb-6 min-h-screen px-0 md:px-1">
@@ -113,7 +114,7 @@
 
 								<div>
 									<!-- Sub-tasks -->
-									{#if task.subTasks.length > 0}
+									{#if (task?.subTasks?.length as number) > 0}
 										{#each task?.subTasks as { title, tag, date }}
 											<div
 												class="mt-2 flex items-center justify-between rounded-3xl border border-stone-300 px-2 py-4 shadow-sm hover:shadow-md"
@@ -143,7 +144,10 @@
 
 								<button
 									class="flex cursor-pointer items-center justify-center gap-2 text-sm font-semibold text-stone-500 disabled:cursor-not-allowed disabled:text-stone-300"
-									onclick={() => (openSubTask = true)}
+									onclick={() => {
+										openSubTask = true;
+										selectedTask = task;
+									}}
 								>
 									<PlusOutline class="m-0 flex h-6 w-6 p-0" />
 									<span>ADD SUBTASK</span>
@@ -162,4 +166,4 @@
 </div>
 
 <AddTask bind:open={openTask} />
-<AddSubTask bind:open={openSubTask} />
+<AddSubTask bind:open={openSubTask} task={selectedTask} />

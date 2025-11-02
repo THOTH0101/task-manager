@@ -1,50 +1,53 @@
+import { addSubTask, deleteTask, getTaskById, updateTask } from '$lib/server/task';
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { deleteTask, getTaskById, updateTask } from '$lib/server/task';
-import {
-	ActivityType,
-	TaskPriority,
-	TaskStage,
-	type Activity,
-	type SubTask,
-	type Task,
-	type User
-} from '$lib';
+import type { Task } from '$lib';
+import { object, string } from 'yup';
 
 export const load: PageServerLoad = async ({ params }) => {
-	const taskFromDb = await getTaskById(params.id);
-
-	const priority = (TaskPriority[taskFromDb?.priority ?? 'NORMAL'] as string).toLowerCase();
-	const stage = (TaskStage[taskFromDb?.stage ?? 'TODO'] as string).toLowerCase();
-
-	const activities = taskFromDb?.activities.map((activity): Activity => {
-		const type = (ActivityType[activity.type] as string).toLowerCase();
-		return {
-			id: activity.id,
-			type,
-			date: activity.date,
-			by: activity.byUserId,
-			activity: activity.activity ?? ''
-		};
-	});
-
-	const task: Task = {
-		id: taskFromDb?.id as string,
-		title: taskFromDb?.title as string,
-		date: taskFromDb?.date as Date,
-		assets: taskFromDb?.assets,
-		isTrashed: taskFromDb?.isTrashed,
-		activities,
-		subTasks: taskFromDb?.subTasks as SubTask[],
-		team: taskFromDb?.teamUsers as User[],
-		priority,
-		stage
-	};
+	const task: Task = (await getTaskById(params.id)) as Task;
 
 	return { task };
 };
 
 export const actions: Actions = {
+	addSubTask: async ({ params, request }) => {
+		const formData = await request.formData();
+
+		let title = formData.get('title') as string;
+		let tag = formData.get('tag') as string;
+		let dueDateString = formData.get('date') as string;
+
+		const formSchema = object({
+			title: string().required('Title is required')
+		});
+
+		try {
+			formSchema.validateSync({ title }, { abortEarly: false });
+
+			let dueDate: Date | undefined = new Date(dueDateString);
+
+			const result = await addSubTask({ title, tag, date: dueDate }, params.id as string);
+
+			if (!result) return fail(400, { message: 'Error! unable to add subtask' });
+
+			return;
+		} catch (error: any) {
+			const validationError: Record<string, string> = {};
+
+			if (error.inner) {
+				error.inner.forEach((error: any) => {
+					validationError[error.path] = error.message;
+				});
+
+				return fail(400, { input: { title, tag, dueDateString }, errors: validationError });
+			}
+
+			console.log('Error adding task: ', error);
+			return fail(400, { message: 'Error creating task.' });
+		}
+	},
+
 	trashTask: async ({ params }) => {
 		const result = await updateTask({ isTrashed: true }, params.id as string);
 

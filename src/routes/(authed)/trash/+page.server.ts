@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const tasks: Task[] =
 		result?.map((task): Task => {
 			const priority = (TaskPriority[task.priority] as string).toLowerCase();
-			const stage = (TaskStage[task.stage] as string).toLowerCase();
+			const stage = (TaskStage[task.stage] as string).toLowerCase().replace('_', ' ');
 
 			return {
 				id: task.id,

@@ -93,7 +93,7 @@ model Task {
 model Activity {
   id        String       @id @default(uuid()) @map("activity_id")
   type      ActivityType @default(ASSIGNED)
-  activity  String?      // The content of the activity/comment (Mongoose 'activity: String' implies not always required)
+  activity  String?
   date      DateTime     @default(now())
   by        User         @relation(fields: [byUserId], references: [id])
   byUserId  String       @map("by_user_id")
@@ -108,8 +108,8 @@ model Activity {
 model SubTask {
   id        String   @id @default(uuid()) @map("sub_task_id")
   title     String
-  date      DateTime? // Assuming it can be null if not provided
-  tag       String?   // Optional field
+  date      DateTime?
+  tag       String?
   task      Task     @relation(fields: [taskId], references: [id])
   taskId    String   @map("task_id")
 

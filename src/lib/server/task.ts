@@ -1,4 +1,12 @@
-import type { TaskPriority, TaskStage } from '$lib';
+import {
+	ActivityType,
+	TaskPriority,
+	TaskStage,
+	type Activity,
+	type SubTask,
+	type Task,
+	type User
+} from '$lib';
 import db from './database';
 
 export const addTask = async (task: {
@@ -23,6 +31,27 @@ export const addTask = async (task: {
 		return result;
 	} catch (error) {
 		console.log('Error adding task:', error);
+	}
+};
+
+export const addSubTask = async (
+	subTask: { title: string; date: Date; tag: string },
+	taskId: string
+) => {
+	try {
+		const result = await db.subTask.create({
+			data: {
+				task: { connect: { id: taskId } },
+				title: subTask.title,
+				date: subTask.date ?? null,
+				tag: subTask.tag ?? ''
+			},
+			select: { id: true }
+		});
+
+		return result;
+	} catch (error) {
+		console.log('Error adding sub-task:', error);
 	}
 };
 
@@ -94,7 +123,37 @@ export const getUserTasks = async (userId: string) => {
 			}
 		});
 
-		return result;
+		const tasks: Task[] =
+			result?.map((task): Task => {
+				const priority = (TaskPriority[task.priority] as string).toLowerCase();
+				const stage = (TaskStage[task.stage] as string).toLowerCase();
+
+				const activities = task.activities.map((activity): Activity => {
+					const type = (ActivityType[activity.type] as string).toLowerCase();
+					return {
+						id: activity.id,
+						type,
+						date: activity.date,
+						by: activity.byUserId,
+						activity: activity.activity ?? ''
+					};
+				});
+
+				return {
+					id: task.id,
+					title: task.title,
+					date: task.date,
+					assets: task.assets,
+					isTrashed: task.isTrashed,
+					activities,
+					subTasks: task.subTasks as SubTask[],
+					team: task.teamUsers as User[],
+					priority,
+					stage
+				};
+			}) ?? [];
+
+		return tasks;
 	} catch (error) {
 		console.error('Error getting tasks:', error);
 	}
@@ -113,7 +172,34 @@ export const getTaskById = async (taskId: string) => {
 			}
 		});
 
-		return result;
+		const priority = (TaskPriority[result?.priority ?? 'NORMAL'] as string).toLowerCase();
+		const stage = (TaskStage[result?.stage ?? 'TODO'] as string).toLowerCase();
+
+		const activities = result?.activities.map((activity): Activity => {
+			const type = (ActivityType[activity.type] as string).toLowerCase();
+			return {
+				id: activity.id,
+				type,
+				date: activity.date,
+				by: activity.byUserId,
+				activity: activity.activity ?? ''
+			};
+		});
+
+		const task: Task = {
+			id: result?.id as string,
+			title: result?.title as string,
+			date: result?.date as Date,
+			assets: result?.assets,
+			isTrashed: result?.isTrashed,
+			activities,
+			subTasks: result?.subTasks as SubTask[],
+			team: result?.teamUsers as User[],
+			priority,
+			stage
+		};
+
+		return task;
 	} catch (error) {
 		console.log('Error getting task by id:', error);
 	}
