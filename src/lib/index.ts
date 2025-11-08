@@ -47,6 +47,7 @@ export type Task = {
 	id: string;
 	title: string;
 	date: Date;
+	description: string;
 	priority: string;
 	stage: string;
 	assets?: string[];
@@ -67,6 +68,7 @@ export type Activity = {
 export type SubTask = {
 	id: string;
 	title: string;
+	isCompleted?: boolean;
 	date: Date;
 	tag: string;
 };
@@ -79,6 +81,12 @@ export type Notice = {
 	notiType: NoticeType;
 	readBy: User[];
 	createdAt: Date;
+};
+
+export const getCompletedSubTasks = (items: SubTask[] = []) => {
+	const totalCompleted = items?.filter((item) => item?.isCompleted).length;
+
+	return totalCompleted;
 };
 
 export function safeStringToEnum<T extends Record<string, any>>(

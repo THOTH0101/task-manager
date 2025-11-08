@@ -1,15 +1,11 @@
 <script lang="ts">
-	import { Button, Dialog, Modal } from 'flowbite-svelte';
+	import { Button, Modal } from 'flowbite-svelte';
 
 	let { open = $bindable(), notice } = $props();
 </script>
 
-<Modal bind:open dismissable={false}>
+<Modal title={notice?.task?.title} bind:open dismissable={false}>
 	<div class="flex w-full flex-col items-center justify-center gap-4 py-4">
-		<Dialog class="text-lg font-semibold">
-			{notice?.task?.title}
-		</Dialog>
-
 		<p class="text-start text-gray-500">{notice?.text}</p>
 
 		<Button

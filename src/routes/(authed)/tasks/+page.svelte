@@ -105,7 +105,10 @@
 										</div>
 										<div class="flex cursor-pointer items-center gap-1 text-stone-600">
 											<ListOutline class="h-6 w-6 shrink-0" />
-											<span>0/{task?.subTasks?.length}</span>
+											<span>
+												{task?.subTasks?.filter((subtask) => subtask.isCompleted).length}/{task
+													?.subTasks?.length}
+											</span>
 										</div>
 									</div>
 

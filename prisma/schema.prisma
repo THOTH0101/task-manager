@@ -11,6 +11,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum TaskPriority {
@@ -73,19 +74,20 @@ model Session {
 
 
 model Task {
-  id        String   @id @default(uuid()) @map("task_id")
-  title     String
-  date      DateTime @default(now())
-  priority  TaskPriority @default(NORMAL)
-  stage     TaskStage    @default(TODO)
-  assets    String[]     
-  isTrashed Boolean      @default(false)
-  activities Activity[] 
-  subTasks   SubTask[]  
-  teamUsers User[]       @relation("TeamAssignments")
-  notices   Notice[]
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id          String   @id @default(uuid()) @map("task_id")
+  title       String
+  date        DateTime @default(now())
+  description String?
+  priority    TaskPriority @default(NORMAL)
+  stage       TaskStage    @default(TODO)
+  assets      String[]     
+  isTrashed   Boolean      @default(false)
+  activities  Activity[] 
+  subTasks    SubTask[]  
+  teamUsers   User[]       @relation("TeamAssignments")
+  notices     Notice[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("tasks")
 }
@@ -106,12 +108,13 @@ model Activity {
 }
 
 model SubTask {
-  id        String   @id @default(uuid()) @map("sub_task_id")
-  title     String
-  date      DateTime?
-  tag       String?
-  task      Task     @relation(fields: [taskId], references: [id])
-  taskId    String   @map("task_id")
+  id          String   @id @default(uuid()) @map("sub_task_id")
+  title       String
+  isCompleted Boolean @default(false) @map("is_completed")
+  date        DateTime?
+  tag         String?
+  task        Task     @relation(fields: [taskId], references: [id])
+  taskId      String   @map("task_id")
 
   @@map("sub_tasks")
 }

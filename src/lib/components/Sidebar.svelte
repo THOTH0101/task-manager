@@ -53,11 +53,11 @@
 				</a>
 			{/each}
 		</div>
-		<button
+		<!-- <button
 			class="bottom-0 flex w-full cursor-pointer items-center gap-2 p-2 text-lg text-stone-800"
 		>
 			<CogSolid class="h-6 w-6 shrink-0" />
 			<span>Settings</span>
-		</button>
+		</button> -->
 	</div>
 </aside>

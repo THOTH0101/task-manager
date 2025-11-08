@@ -13,6 +13,8 @@
 	import AddSubTask from './AddSubTask.svelte';
 	import AddTask from './AddTask.svelte';
 	import type { Task } from '$lib';
+	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 
 	const { task } = $props();
 
@@ -23,7 +25,7 @@
 
 	let isLoading = $state(false);
 
-	const items = [
+	let items = $state([
 		{
 			label: 'Open Task',
 			icon: FolderOpenOutline,
@@ -45,7 +47,13 @@
 			className: 'mr-2 h-5 w-5',
 			onClick: () => (openSubtask = true)
 		}
-	];
+	]);
+
+	onMount(() => {
+		if (page.data?.user?.isAdmin === false) {
+			items = items.filter((item) => item.label !== 'Edit');
+		}
+	});
 </script>
 
 <div class="relative inline-block p-2 text-left">

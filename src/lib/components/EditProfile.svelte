@@ -18,7 +18,7 @@
 	let errors = { name: '', title: '', email: '', role: '' };
 
 	// keep userInput in sync when the `user` prop changes (doesn't react to userInput changes)
-	$: if (user !== undefined) {
+	$: if (user) {
 		userInput = {
 			name: user?.name ?? '',
 			title: user?.title ?? '',

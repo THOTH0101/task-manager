@@ -12,17 +12,21 @@ import db from './database';
 export const addTask = async (task: {
 	title: string;
 	date: Date;
+	description: string;
 	stage: TaskStage;
 	priority: TaskPriority;
 	users: { id: string }[];
+	assets?: string[];
 }) => {
 	try {
 		const result = await db.task.create({
 			data: {
 				title: task.title,
 				date: task.date,
+				description: task.description,
 				stage: task.stage,
 				priority: task.priority,
+				assets: task.assets,
 				teamUsers: { connect: task.users }
 			},
 			select: { id: true }
@@ -52,6 +56,20 @@ export const addSubTask = async (
 		return result;
 	} catch (error) {
 		console.log('Error adding sub-task:', error);
+	}
+};
+
+export const updateSubTask = async (data: object, subTaskId: string) => {
+	try {
+		const result = await db.subTask.update({
+			data,
+			where: { id: subTaskId },
+			select: { id: true }
+		});
+
+		return result;
+	} catch (error) {
+		console.log('Error updating sub-task:', error);
 	}
 };
 
@@ -116,7 +134,7 @@ export const getUserTasks = async (userId: string) => {
 				activities: {
 					select: { id: true, type: true, activity: true, date: true, byUserId: true }
 				},
-				subTasks: { select: { id: true, title: true, date: true, tag: true } }
+				subTasks: { select: { id: true, title: true, date: true, tag: true, isCompleted: true } }
 			},
 			orderBy: {
 				createdAt: 'desc'
@@ -149,7 +167,8 @@ export const getUserTasks = async (userId: string) => {
 					subTasks: task.subTasks as SubTask[],
 					team: task.teamUsers as User[],
 					priority,
-					stage
+					stage,
+					description: task.description ?? ''
 				};
 			}) ?? [];
 
@@ -166,22 +185,28 @@ export const getTaskById = async (taskId: string) => {
 			include: {
 				teamUsers: { select: { id: true, title: true, role: true, email: true, name: true } },
 				activities: {
-					select: { id: true, type: true, activity: true, date: true, byUserId: true }
+					select: {
+						id: true,
+						type: true,
+						activity: true,
+						date: true,
+						by: { select: { id: true, name: true } }
+					}
 				},
-				subTasks: { select: { id: true, title: true, date: true, tag: true } }
+				subTasks: { select: { id: true, title: true, date: true, tag: true, isCompleted: true } }
 			}
 		});
 
 		const priority = (TaskPriority[result?.priority ?? 'NORMAL'] as string).toLowerCase();
-		const stage = (TaskStage[result?.stage ?? 'TODO'] as string).toLowerCase();
+		const stage = (TaskStage[result?.stage ?? 'TODO'] as string).toLowerCase().replace('_', ' ');
 
 		const activities = result?.activities.map((activity): Activity => {
-			const type = (ActivityType[activity.type] as string).toLowerCase();
+			const type = (ActivityType[activity.type] as string).toLowerCase().replace('_', ' ');
 			return {
 				id: activity.id,
 				type,
 				date: activity.date,
-				by: activity.byUserId,
+				by: activity.by.name,
 				activity: activity.activity ?? ''
 			};
 		});
@@ -196,7 +221,8 @@ export const getTaskById = async (taskId: string) => {
 			subTasks: result?.subTasks as SubTask[],
 			team: result?.teamUsers as User[],
 			priority,
-			stage
+			stage,
+			description: result?.description as string
 		};
 
 		return task;

@@ -17,6 +17,7 @@
 	"devDependencies": {
 		"@lucia-auth/adapter-prisma": "^4.0.1",
 		"@sveltejs/adapter-auto": "^6.0.0",
+		"@sveltejs/adapter-vercel": "^6.1.1",
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
 		"@tailwindcss/forms": "^0.5.9",
@@ -36,6 +37,7 @@
 	"dependencies": {
 		"@prisma/client": "^6.17.1",
 		"@prisma/extension-accelerate": "^2.0.2",
+		"@supabase/supabase-js": "^2.80.0",
 		"bcrypt": "^6.0.0",
 		"echarts": "^6.0.0",
 		"flowbite": "^3.1.2",

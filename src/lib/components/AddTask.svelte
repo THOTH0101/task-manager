@@ -1,45 +1,45 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { LISTS, PRIORITY, type Task } from '$lib';
-	import { currentTeam } from '$lib/store/store';
+	import { LISTS, PRIORITY, type User } from '$lib';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { SelectOptionType } from 'flowbite-svelte';
 	import { Button, Input, Label, Modal, MultiSelect } from 'flowbite-svelte';
 	import { ImageOutline } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
-	import { get } from 'svelte/store';
 	import Loader from './Loader.svelte';
+	import { page } from '$app/state';
 
-	export let open: boolean = false;
-	export let task: Task | null = null;
+	let { open = $bindable(), task = null } = $props();
 
-	let isLoading = false;
+	let isLoading = $state(false);
+	let selectedUsers: string[] = $state([]);
+	let errors = $state({ title: '', dateInput: '' });
+	let userInput = $state({
+		title: task?.title ?? '',
+		dateInput: task?.date?.toISOString().slice(0, 10) ?? '',
+		description: task?.description ?? '',
+		stage: task?.stage ?? '',
+		priority: task?.priority ?? ''
+	});
 
-	let users = get(currentTeam) ?? [];
-	let selectedUsers: string[] = [];
+	let users: User[] = page.data?.team?.filter((user: User) => user.isActive);
 
-	let listOption: SelectOptionType<string>[] = users.map((user) => ({
+	$effect(() => {
+		if (task) {
+			userInput = {
+				title: task?.title ?? '',
+				dateInput: task?.date?.toISOString().slice(0, 10) ?? '',
+				description: task?.description ?? '',
+				stage: task?.stage ?? '',
+				priority: task?.priority ?? ''
+			};
+		}
+	});
+
+	let listOption: SelectOptionType<string>[] = users.map((user: User) => ({
 		value: JSON.stringify(user),
 		name: user.name
 	}));
-
-	let userInput = {
-		title: task?.title ?? '',
-		dateInput: task?.date?.toISOString().slice(0, 10) ?? '',
-		stage: task?.stage ?? '',
-		priority: task?.priority ?? ''
-	};
-	let errors = { title: '', dateInput: '' };
-
-	// keep userInput in sync when the `task` prop changes (doesn't react to userInput changes)
-	$: if (task !== undefined) {
-		userInput = {
-			title: task?.title ?? '',
-			dateInput: task?.date?.toISOString().slice(0, 10) ?? '',
-			stage: task?.stage ?? '',
-			priority: task?.priority ?? ''
-		};
-	}
 
 	const handleSubmit: SubmitFunction = async () => {
 		isLoading = true;
@@ -53,8 +53,8 @@
 					selectedUsers = [];
 					break;
 				case 'failure':
-					userInput = result.data?.input;
-					errors = result.data?.errors;
+					userInput = result.data?.input ?? {};
+					errors = result.data?.errors ?? {};
 					toast.error(result.data?.message ?? 'Invalid credentials.');
 					await update();
 					break;
@@ -72,7 +72,8 @@
 	title={task ? 'UPDATE TASK' : 'ADD TASK'}
 >
 	<form
-		action={task ? '/tasks?/updateTask' : '/tasks?/addTask'}
+		action={task ? `/task/${task.id}?/updateTask` : '/tasks?/addTask'}
+		enctype="multipart/form-data"
 		method="POST"
 		use:enhance={handleSubmit}
 	>
@@ -153,9 +154,10 @@
 				<div class="mt-4 flex w-full items-center justify-center">
 					<label
 						class="text-ascent-1 hover:text-ascent-2 my-4 flex cursor-pointer items-center gap-1 text-base"
-						for="imgUpload"
+						for="imgUpLoad"
 					>
 						<input
+							name="assets"
 							id="imgUpLoad"
 							accept=".jpg, .png, .jpeg"
 							type="file"
@@ -167,6 +169,14 @@
 						<span>Add Assets</span>
 					</label>
 				</div>
+			</div>
+			<div class="w-full">
+				<p>Task Description</p>
+				<textarea
+					name="description"
+					bind:value={userInput.description}
+					class="w-full border border-stone-300 bg-transparent px-3 py-1.5 text-base text-stone-900 placeholder-stone-300 ring-blue-300 outline-none focus:ring-2 2xl:py-3"
+				></textarea>
 			</div>
 
 			<div class="gap-4 sm:flex sm:flex-row-reverse">
@@ -187,8 +197,9 @@
 							type="button"
 							class="cursor-pointer bg-stone-100 px-5 text-sm font-semibold text-stone-900 sm:w-auto"
 							onclick={() => {
-								userInput = { title: '', dateInput: '', stage: '', priority: '' };
+								userInput = { title: '', dateInput: '', stage: '', priority: '', description: '' };
 								errors = { title: '', dateInput: '' };
+								selectedUsers = [];
 								open = false;
 							}}
 						>

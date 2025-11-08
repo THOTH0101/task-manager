@@ -7,12 +7,14 @@
 	import { slide } from 'svelte/transition';
 	import Loader from './Loader.svelte';
 
-	let { open = $bindable(), type = 'delete', msg = null, action } = $props();
+	let { open = $bindable(), type = 'delete', msg = null, action, userId = null } = $props();
 
 	let isLoading = $state(false);
 
-	const handleSubmit: SubmitFunction = async () => {
+	const handleSubmit: SubmitFunction = async ({ formData }) => {
 		isLoading = true;
+
+		if (userId) formData.append('id', userId);
 
 		return async ({ result, update }) => {
 			switch (result.type) {

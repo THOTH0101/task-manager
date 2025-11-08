@@ -5,7 +5,6 @@
 	import { Dropdown, DropdownItem, Spinner } from 'flowbite-svelte';
 	import { toast } from 'svelte-sonner';
 	import { scale } from 'svelte/transition';
-	import { page } from '$app/state';
 
 	import {
 		ArrowRightToBracketOutline,
@@ -14,6 +13,7 @@
 	} from 'flowbite-svelte-icons';
 	import ChangePassword from './ChangePassword.svelte';
 	import EditProfile from './EditProfile.svelte';
+	import { page } from '$app/state';
 
 	type User = {
 		id: string;
@@ -31,10 +31,12 @@
 	let userModal = $state(false);
 
 	let user = $state<User>();
-	let selectedUser: object | undefined = $state({});
+	let selectedUser = $state<User>();
 
+	// keep user in sync with page data
 	$effect(() => {
-		user = page.data?.user;
+		user = page.data.user;
+		selectedUser;
 	});
 </script>
 

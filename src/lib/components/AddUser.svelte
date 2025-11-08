@@ -38,8 +38,8 @@
 					await update({ reset: true });
 					break;
 				case 'failure':
-					userInput = result.data?.input;
-					errors = result.data?.errors;
+					userInput = result.data?.input ?? {};
+					errors = result.data?.errors ?? {};
 					toast.error(result.data?.message ?? 'Invalid credentials.');
 					await update();
 					break;

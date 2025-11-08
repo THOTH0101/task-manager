@@ -71,6 +71,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'Error! unable to create user.' });
 		}
 	},
+
 	updateUser: async ({ request }) => {
 		const formData = await request.formData();
 
@@ -112,6 +113,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'Error! unable to update user.' });
 		}
 	},
+
 	deleteUser: async ({ request, locals }) => {
 		const formData = await request.formData();
 
@@ -132,7 +134,8 @@ export const actions: Actions = {
 			return fail(400, { message: 'Error! unable to delete user.' });
 		}
 	},
-	activeUser: async ({ request }) => {
+
+	changeUserState: async ({ request }) => {
 		const formData = await request.formData();
 
 		const email = formData.get('email') as string;
@@ -152,6 +155,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'Error! unable to activate or deactivate user.' });
 		}
 	},
+
 	changePassword: async ({ request }) => {
 		const formData = await request.formData();
 

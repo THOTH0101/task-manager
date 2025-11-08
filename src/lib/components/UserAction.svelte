@@ -5,16 +5,21 @@
 	import { QuestionCircleSolid } from 'flowbite-svelte-icons';
 	import { toast } from 'svelte-sonner';
 	import { slide } from 'svelte/transition';
+	import Loader from './Loader.svelte';
 
 	let { open = $bindable(), user } = $props();
 
+	let isLoading = $state(false);
+
 	const handleSubmit: SubmitFunction = async () => {
+		isLoading = true;
 		return async ({ result, update }) => {
 			if (result.type === 'success') {
 				await update();
 				open = false;
 				toast.success(result.data?.message);
 			}
+			isLoading = false;
 		};
 	};
 </script>
@@ -37,15 +42,20 @@
 		</p>
 
 		<div class="gap-4 bg-stone-200 py-3 sm:flex sm:flex-row-reverse">
-			<form method="POST" action="/team?/activeUser" use:enhance={handleSubmit}>
+			<form method="POST" action="/team?/changeUserState" use:enhance={handleSubmit}>
 				<input type="hidden" name="email" value={user?.email} />
 				<input type="checkbox" name="isActive" checked={user?.isActive} class="peer sr-only" />
-				<Button type="submit" color="red">Yes, I'm sure</Button>
-			</form>
 
-			<Button type="submit" color="alternative" outline onclick={() => (open = false)}>
-				No, cancel
-			</Button>
+				{#if isLoading}
+					<Loader color={'bg-red-500'} />
+				{:else}
+					<Button type="submit" color="red">Yes, I'm sure</Button>
+
+					<Button type="submit" color="alternative" outline onclick={() => (open = false)}>
+						No, cancel
+					</Button>
+				{/if}
+			</form>
 		</div>
 	</div>
 </Modal>

@@ -7,10 +7,8 @@ import { addUser, isUserExist } from '$lib/server/user.js';
 export const load: PageServerLoad = async ({ locals }) => {
 	// redirect user if logged in
 	if (locals.user) {
-		redirect(302, '/dashboard');
+		return redirect(302, '/dashboard');
 	}
-
-	return {};
 };
 
 export const actions = {
@@ -72,8 +70,6 @@ export const actions = {
 			if (!user) {
 				return fail(400, { message: 'Error adding user' });
 			}
-
-			return { success: true };
 		} catch (error: any) {
 			const validationErrors: Record<string, unknown> = {};
 

@@ -48,7 +48,7 @@
 		bind:isOpen
 		transition={scale}
 		arrow={false}
-		class="mt-3 rounded-lg bg-stone-50 px-4 text-sm leading-6 shadow-lg ring-1 ring-stone-900/5"
+		class="mt-3 flex w-screen max-w-md flex-auto overflow-hidden rounded-lg bg-stone-50 px-4 text-sm leading-6 shadow-lg ring-1 ring-stone-900/5 md:-right-2"
 		trigger="click"
 		triggeredBy="#notif-btn"
 	>

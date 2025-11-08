@@ -31,12 +31,12 @@
 		return async ({ result, update }) => {
 			switch (result.type) {
 				case 'success':
-					toast.success('Account created successfully.');
 					goto('/login');
+					toast.success('Account created successfully.');
 					break;
 				case 'failure':
-					usersInput = result.data?.input || {};
-					errors = result.data?.errors || {};
+					usersInput = result.data?.input ?? {};
+					errors = result.data?.errors ?? {};
 					toast.error(result.data?.message ?? 'Invalid credentials.');
 					break;
 				default:

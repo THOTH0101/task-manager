@@ -3,7 +3,6 @@
 	import AddUser from '$lib/components/AddUser.svelte';
 	import Prompt from '$lib/components/Prompt.svelte';
 	import UserAction from '$lib/components/UserAction.svelte';
-	import { currentTeam } from '$lib/store/store.js';
 	import {
 		Button,
 		Table,
@@ -16,10 +15,6 @@
 	import { EditOutline, PlusOutline, TrashBinOutline } from 'flowbite-svelte-icons';
 
 	const { data } = $props();
-
-	$effect(() => {
-		$currentTeam = data.team?.filter((user) => user.isActive);
-	});
 
 	let defaultModal = $state(false);
 	let popupModal = $state(false);
@@ -69,7 +64,7 @@
 			<TableHeadCell>Active</TableHeadCell>
 			<TableHeadCell>Action</TableHeadCell>
 		</TableHead>
-		<TableBody>
+		<TableBody class="bg-stone-500">
 			{#each data.team as { name, title, role, isActive, id, email }}
 				<TableBodyRow>
 					<TableBodyCell>
